@@ -2,10 +2,15 @@ const express = require('express');
 const pool = require('../db');
 const router = express.Router();
 
+// Todas as consultas filtram por oficina_id (vem do login, via req.usuario)
+
 // LISTAR todos
 router.get('/', async (req, res) => {
   try {
-    const { rows } = await pool.query('SELECT * FROM clientes ORDER BY nome');
+    const { rows } = await pool.query(
+      'SELECT * FROM clientes WHERE oficina_id = $1 ORDER BY nome',
+      [req.usuario.oficina_id]
+    );
     res.json(rows);
   } catch (erro) {
     res.status(500).json({ erro: erro.message });
@@ -15,7 +20,10 @@ router.get('/', async (req, res) => {
 // BUSCAR um por id
 router.get('/:id', async (req, res) => {
   try {
-    const { rows } = await pool.query('SELECT * FROM clientes WHERE id = $1', [req.params.id]);
+    const { rows } = await pool.query(
+      'SELECT * FROM clientes WHERE id = $1 AND oficina_id = $2',
+      [req.params.id, req.usuario.oficina_id]
+    );
     if (rows.length === 0) return res.status(404).json({ erro: 'Cliente não encontrado' });
     res.json(rows[0]);
   } catch (erro) {
@@ -31,8 +39,8 @@ router.post('/', async (req, res) => {
   }
   try {
     const { rows } = await pool.query(
-      'INSERT INTO clientes (nome, celular, email) VALUES ($1, $2, $3) RETURNING *',
-      [nome, celular, email || null]
+      'INSERT INTO clientes (oficina_id, nome, celular, email) VALUES ($1, $2, $3, $4) RETURNING *',
+      [req.usuario.oficina_id, nome, celular, email || null]
     );
     res.status(201).json(rows[0]);
   } catch (erro) {
@@ -48,8 +56,8 @@ router.put('/:id', async (req, res) => {
   }
   try {
     const { rows } = await pool.query(
-      'UPDATE clientes SET nome = $1, celular = $2, email = $3 WHERE id = $4 RETURNING *',
-      [nome, celular, email || null, req.params.id]
+      'UPDATE clientes SET nome = $1, celular = $2, email = $3 WHERE id = $4 AND oficina_id = $5 RETURNING *',
+      [nome, celular, email || null, req.params.id, req.usuario.oficina_id]
     );
     if (rows.length === 0) return res.status(404).json({ erro: 'Cliente não encontrado' });
     res.json(rows[0]);
@@ -61,7 +69,10 @@ router.put('/:id', async (req, res) => {
 // EXCLUIR
 router.delete('/:id', async (req, res) => {
   try {
-    const resultado = await pool.query('DELETE FROM clientes WHERE id = $1', [req.params.id]);
+    const resultado = await pool.query(
+      'DELETE FROM clientes WHERE id = $1 AND oficina_id = $2',
+      [req.params.id, req.usuario.oficina_id]
+    );
     if (resultado.rowCount === 0) return res.status(404).json({ erro: 'Cliente não encontrado' });
     res.status(204).send();
   } catch (erro) {

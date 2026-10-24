@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Painel admin</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/auth.css">
+</head>
+<body>
+  <header>
+    <h1>Painel admin</h1>
+    <div class="usuario">
+      <span id="nome-usuario"></span>
+      <button id="sair">Sair</button>
+    </div>
+  </header>
+  <main id="view">
+    <!-- Página provisória: será substituída pelo painel completo (lista de oficinas e OS em aberto) -->
+    <h2>Login de super admin funcionando</h2>
+    <p class="vazio">A lista de oficinas e das OS em aberto entra nas próximas fases.</p>
+  </main>
+  <script src="js/auth.js"></script>
+  <script>
+    document.querySelector('#sair').onclick = () => sair();
+    (async () => {
+      try {
+        if (!sessao.token()) return sair();
+        const eu = await api('/auth/eu');
+        if (eu.usuario.papel !== 'super_admin') { location.href = 'index.html'; return; }
+        document.querySelector('#nome-usuario').textContent = eu.usuario.nome;
+      } catch (e) { /* api() já redireciona para o login quando a sessão é inválida */ }
+    })();
+  </script>
+</body>
+</html>

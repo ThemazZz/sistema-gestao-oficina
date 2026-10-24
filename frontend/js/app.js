@@ -1,6 +1,6 @@
-// ===== CONFIGURAÇÃO (white-label: troque o nome da oficina aqui) =====
-const NOME_OFICINA = 'Oficina do Tião';
-const API = 'http://localhost:3000';
+// ===== CONFIGURAÇÃO =====
+// O nome da oficina vem do banco (tabela oficinas) depois do login.
+// O endereço da API e a comunicação com ela ficam em js/auth.js.
 
 const STATUS = {
   a_iniciar: 'A iniciar',
@@ -12,27 +12,6 @@ const STATUS = {
 const $ = (s) => document.querySelector(s);
 const moeda = (v) => Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-
-document.title = NOME_OFICINA;
-$('#nome-oficina').textContent = NOME_OFICINA;
-
-// ===== Comunicação com a API =====
-async function api(rota, metodo = 'GET', corpo) {
-  let r;
-  try {
-    r = await fetch(API + rota, {
-      method: metodo,
-      headers: { 'Content-Type': 'application/json' },
-      body: corpo ? JSON.stringify(corpo) : undefined,
-    });
-  } catch {
-    throw new Error('Não foi possível conectar à API. O servidor está rodando (npm run dev)?');
-  }
-  if (r.status === 204) return null;
-  const dados = await r.json();
-  if (!r.ok) throw new Error(dados.erro || 'Erro inesperado');
-  return dados;
-}
 
 function aviso(msg, erro = false) {
   const el = $('#aviso');
@@ -191,4 +170,19 @@ function ir(v) {
   tentar(VIEWS[v]);
 }
 document.querySelectorAll('#menu button').forEach((b) => (b.onclick = () => ir(b.dataset.v)));
-ir('os');
+$('#sair').onclick = () => sair();
+
+// Valida o login, descobre quem é o usuário e só então abre a tela
+async function iniciar() {
+  if (!sessao.token()) return sair();
+  const eu = await api('/auth/eu');
+  if (eu.usuario.papel === 'super_admin') {
+    location.href = 'admin.html';
+    return;
+  }
+  document.title = eu.oficina.nome;
+  $('#nome-oficina').textContent = eu.oficina.nome;
+  $('#nome-usuario').textContent = eu.usuario.nome;
+  ir('os');
+}
+tentar(iniciar);

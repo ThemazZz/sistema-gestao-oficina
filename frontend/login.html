@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Entrar</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/auth.css">
+</head>
+<body class="login">
+  <main class="login-cartao">
+    <h1>Entrar</h1>
+    <p class="login-sub">Sistema de gestão de oficina</p>
+    <form id="f" class="login-form">
+      <label>E-mail
+        <input name="email" type="email" autocomplete="username" required autofocus>
+      </label>
+      <label>Senha
+        <input name="senha" type="password" autocomplete="current-password" required>
+      </label>
+      <p id="erro" class="login-erro" role="alert"></p>
+      <button id="entrar" class="primario">Entrar</button>
+    </form>
+  </main>
+  <script src="js/auth.js"></script>
+  <script src="js/login.js"></script>
+</body>
+</html>
