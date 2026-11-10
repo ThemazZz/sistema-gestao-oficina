@@ -30,7 +30,7 @@ oficina/
 ├── backend/
 │   ├── src/
 │   │   ├── middleware/   (auth: confere o login e a oficina de quem acessa)
-│   │   ├── routes/       (auth, clientes, veiculos, servicos, os)
+│   │   ├── routes/       (auth, admin, clientes, veiculos, servicos, os)
 │   │   ├── db.js         (conexão com o PostgreSQL)
 │   │   └── server.js
 │   ├── scripts/          (criar_usuario.js)
@@ -102,6 +102,21 @@ Clientes, veículos, serviços e OS pertencem a uma oficina (`oficina_id`). Um u
 | DELETE | `/os/:id/servicos/:servico_id` | Remove um serviço da OS |
 | DELETE | `/os/:id` | Exclui a OS |
 
+### Rotas do super admin
+
+Exigem login com o papel *super admin* (usuários de oficina recebem 403). O admin enxerga todas as oficinas, mas só **lê** as OS: quem altera é a própria oficina.
+
+| Método | Rota | Descrição |
+|---|---|---|
+| GET | `/admin/resumo` | Totais: oficinas (ativas e bloqueadas) e OS em aberto por status |
+| GET | `/admin/oficinas` | Lista as oficinas com nº de usuários, clientes, veículos e OS |
+| GET | `/admin/oficinas/:id` | Detalhe da oficina com seus usuários |
+| POST | `/admin/oficinas` | Cadastra a oficina e o login do dono (`nome`, `dono_nome`, `dono_email`, `dono_senha`) |
+| PUT | `/admin/oficinas/:id` | Renomeia a oficina |
+| PATCH | `/admin/oficinas/:id/ativa` | Bloqueia ou desbloqueia (`{ "ativa": false }`); vale na hora e não apaga dados |
+| PATCH | `/admin/usuarios/:id/senha` | Redefine a senha de um usuário de oficina |
+| GET | `/admin/os` | OS de todas as oficinas; por padrão só as em aberto (aceita `?oficina_id=` e `?status=` com um status ou `todos`) |
+
 ## Decisões técnicas
 
 - Consultas SQL parametrizadas, para evitar SQL injection
@@ -114,8 +129,7 @@ Clientes, veículos, serviços e OS pertencem a uma oficina (`oficina_id`). Um u
 
 ## Próximos passos
 
-- Rotas do super admin: cadastrar e bloquear oficinas, ver as OS em aberto de todas elas
-- Painel admin completo (hoje `admin.html` é só uma página provisória)
+- Painel admin completo no front-end (hoje `admin.html` é só uma página provisória; as rotas já existem)
 - Edição de registros pela interface
 - Vários usuários por oficina (a tabela `usuarios` já suporta)
 - Limite de tentativas de login

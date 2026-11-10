@@ -1,7 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const { autenticar, apenasOficina } = require('./middleware/auth');
+const { autenticar, apenasOficina, apenasSuperAdmin } = require('./middleware/auth');
 
 // Sem segredo para assinar os tokens, o login não funciona: melhor parar logo
 if (!process.env.JWT_SECRET) {
@@ -25,6 +25,9 @@ app.use('/clientes', autenticar, apenasOficina, require('./routes/clientes'));
 app.use('/veiculos', autenticar, apenasOficina, require('./routes/veiculos'));
 app.use('/servicos', autenticar, apenasOficina, require('./routes/servicos'));
 app.use('/os', autenticar, apenasOficina, require('./routes/os'));
+
+// Rotas do super admin: exigem login com papel super_admin
+app.use('/admin', autenticar, apenasSuperAdmin, require('./routes/admin'));
 
 const PORTA = process.env.PORT || 3000;
 app.listen(PORTA, () => {
