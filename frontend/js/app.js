@@ -35,24 +35,51 @@ async function crud({ rota, campos, colunas }) {
     : `<label>${c.rotulo}<input name="${c.nome}" type="${c.tipo || 'text'}" ${c.tipo === 'number' ? 'step="0.01" min="0"' : ''} ${c.obrigatorio ? 'required' : ''}></label>`;
 
   const linhas = lista.map((i) =>
-    `<tr>${colunas.map((c) => `<td>${c[1](i)}</td>`).join('')}<td><button class="perigo" data-id="${i.id}">Excluir</button></td></tr>`
+    `<tr>${colunas.map((c) => `<td>${c[1](i)}</td>`).join('')}<td class="acoes"><button class="editar" data-edit="${i.id}">Editar</button><button class="perigo" data-id="${i.id}">Excluir</button></td></tr>`
   ).join('');
 
   $('#view').innerHTML = `
-    <form id="f" class="form">${campos.map(campo).join('')}<button class="primario">Cadastrar</button></form>
+    <form id="f" class="form">${campos.map(campo).join('')}<button class="primario" id="f-salvar">Cadastrar</button><button type="button" id="f-cancelar" hidden>Cancelar</button></form>
     <div class="tabela"><table>
       <thead><tr>${colunas.map((c) => `<th>${c[0]}</th>`).join('')}<th></th></tr></thead>
       <tbody>${linhas || `<tr><td colspan="${colunas.length + 1}" class="vazio">Nada cadastrado ainda. Use o formulário acima.</td></tr>`}</tbody>
     </table></div>`;
 
-  $('#f').onsubmit = (e) => {
+  // Modo edição: ao clicar em Editar, o formulário é preenchido e o envio vira um PUT
+  let editando = null;
+  const form = $('#f');
+  const sair_edicao = () => {
+    editando = null;
+    form.reset();
+    $('#f-salvar').textContent = 'Cadastrar';
+    $('#f-cancelar').hidden = true;
+  };
+  $('#f-cancelar').onclick = sair_edicao;
+
+  form.onsubmit = (e) => {
     e.preventDefault();
     tentar(async () => {
-      await api(rota, 'POST', Object.fromEntries(new FormData(e.target)));
-      aviso('Cadastrado');
+      const dados = Object.fromEntries(new FormData(form));
+      if (editando) {
+        await api(`${rota}/${editando}`, 'PUT', dados);
+        aviso('Alterado');
+      } else {
+        await api(rota, 'POST', dados);
+        aviso('Cadastrado');
+      }
       await VIEWS[atual]();
     });
   };
+  document.querySelectorAll('[data-edit]').forEach((b) => (b.onclick = () => {
+    const item = lista.find((i) => String(i.id) === b.dataset.edit);
+    if (!item) return;
+    editando = item.id;
+    for (const c of campos) form.elements[c.nome].value = item[c.nome] ?? '';
+    $('#f-salvar').textContent = 'Salvar alterações';
+    $('#f-cancelar').hidden = false;
+    form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    form.elements[campos[0].nome].focus();
+  }));
   document.querySelectorAll('[data-id]').forEach((b) => (b.onclick = () => {
     if (!confirm('Excluir este registro?')) return;
     tentar(async () => {
