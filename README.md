@@ -6,6 +6,7 @@ Foi pensado como **base white-label**: nada no código é amarrado a uma oficina
 
 ## Funcionalidades
 
+- CRUD completo pela interface (cadastrar, listar, **editar** e excluir) de **clientes**, **veículos** e **serviços**
 - Cadastro de **clientes** (nome, celular, e-mail opcional)
 - Cadastro de **veículos** (modelo e placa), vinculados a um cliente
 - Catálogo de **serviços** com valor padrão
@@ -116,7 +117,17 @@ Clientes, veículos, serviços e OS pertencem a uma oficina (`oficina_id`). Um u
 
 - Rotas do super admin: cadastrar e bloquear oficinas, ver as OS em aberto de todas elas
 - Painel admin completo (hoje `admin.html` é só uma página provisória)
-- Edição de registros pela interface
 - Vários usuários por oficina (a tabela `usuarios` já suporta)
 - Limite de tentativas de login
 - Módulos de estoque de peças, venda de itens e controle de gastos
+
+## Roteiro de demonstração do CRUD
+
+Com banco, back-end e front-end rodando e logado como uma oficina, na aba **Clientes**:
+
+1. **Create:** preencha o formulário e clique em *Cadastrar*.
+2. **Read:** o cliente aparece na tabela logo abaixo.
+3. **Update:** clique em *Editar* na linha, altere os campos e clique em *Salvar alterações*.
+4. **Delete:** clique em *Excluir* e confirme.
+
+Para conferir no banco depois de cada passo: `SELECT * FROM clientes;`
